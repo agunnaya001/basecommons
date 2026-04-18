@@ -261,7 +261,7 @@ forge coverage
 
 ## 🌐 API Reference
 
-Base URL: `https://your-deployment.replit.app/api`
+Base URL: `https://base-commons-mobile--agunnaya001.replit.app/api`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
