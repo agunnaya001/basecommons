@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import ProjectDetail from "@/pages/project";
 import CreateProject from "@/pages/create";
 import Admin from "@/pages/admin";
+import HowItWorks from "@/pages/how-it-works";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/project/:id" component={ProjectDetail} />
       <Route path="/create" component={CreateProject} />
       <Route path="/admin" component={Admin} />
+      <Route path="/how-it-works" component={HowItWorks} />
       <Route component={NotFound} />
     </Switch>
   );

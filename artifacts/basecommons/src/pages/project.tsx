@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { format } from "date-fns";
 import { ExternalLink, Globe, Leaf, Users, ArrowUpRight } from "lucide-react";
+import { ShareButtons } from "@/components/share-buttons";
 import gardenImg from "@/assets/garden.png";
 import openSourceImg from "@/assets/opensource.png";
 import musicImg from "@/assets/music.png";
@@ -190,6 +191,16 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground font-mono">
                 Recipient: {truncateAddress(project.recipientAddress)}
               </div>
+            </div>
+
+            {/* Share Section */}
+            <div className="pt-6 border-t border-border/50">
+              <ShareButtons
+                projectName={project.name}
+                projectId={project.id}
+                totalDonationsEth={formatWeiToEth(project.totalDonationsWei)}
+                matchEstimateEth={formatWeiToEth(project.estimatedMatchWei)}
+              />
             </div>
 
             <section className="pt-8">

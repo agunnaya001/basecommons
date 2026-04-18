@@ -15,12 +15,14 @@ import { formatWeiToEth, truncateAddress } from "@/lib/web3";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Leaf, ArrowRight, TrendingUp, Users, Activity } from "lucide-react";
+import { Leaf, ArrowRight, TrendingUp, Users, Activity, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { formatDistanceToNow } from "date-fns";
 import gardenImg from "@/assets/garden.png";
 import openSourceImg from "@/assets/opensource.png";
 import musicImg from "@/assets/music.png";
 import beesImg from "@/assets/bees.png";
+import { useState, useMemo } from "react";
 
 const projectImages: Record<string, string> = {
   "Community Garden": gardenImg,
@@ -29,7 +31,12 @@ const projectImages: Record<string, string> = {
   "Urban Beekeeping": beesImg,
 };
 
+const CATEGORIES = ["All", "Community", "Open Source", "Environment", "Education", "Music", "Agriculture"];
+
 export default function Home() {
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+
   const { data: stats, isLoading: statsLoading } = useGetPlatformStats({
     query: { queryKey: getGetPlatformStatsQueryKey() }
   });
@@ -48,6 +55,18 @@ export default function Home() {
     { limit: 5 },
     { query: { queryKey: getGetLeaderboardQueryKey({ limit: 5 }) } }
   );
+
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+    return projects.filter(p => {
+      const matchesSearch = !search || 
+        p.name.toLowerCase().includes(search.toLowerCase()) || 
+        p.description.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = activeCategory === "All" || 
+        (p.category || "Community").toLowerCase().includes(activeCategory.toLowerCase());
+      return matchesSearch && matchesCategory;
+    });
+  }, [projects, search, activeCategory]);
 
   return (
     <Layout>
@@ -78,6 +97,9 @@ export default function Home() {
               </Button>
               <Button size="lg" variant="outline" className="rounded-full w-full sm:w-auto text-lg px-8 py-6 bg-transparent" asChild>
                 <Link href="/create">Submit Project</Link>
+              </Button>
+              <Button size="lg" variant="ghost" className="rounded-full w-full sm:w-auto text-lg px-8 py-6 gap-2" asChild>
+                <Link href="/how-it-works">How QF Works <ArrowRight size={16} /></Link>
               </Button>
             </div>
           </motion.div>
@@ -114,8 +136,41 @@ export default function Home() {
       <div className="container mx-auto max-w-7xl px-4 py-12 flex flex-col lg:flex-row gap-12" id="projects">
         {/* Main Feed */}
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold tracking-tight">Active Projects</h2>
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-3xl font-bold tracking-tight">Active Projects</h2>
+              {!projectsLoading && (
+                <span className="text-sm text-muted-foreground">{filteredProjects.length} projects</span>
+              )}
+            </div>
+
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search projects..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9 bg-background"
+              />
+            </div>
+
+            {/* Category filter */}
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                    activeCategory === cat
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -134,7 +189,13 @@ export default function Home() {
                   </CardContent>
                 </Card>
               ))
-            ) : projects?.map((project, i) => (
+            ) : filteredProjects.length === 0 ? (
+              <div className="md:col-span-2 text-center py-16 text-muted-foreground border border-dashed border-border rounded-2xl">
+                <Search size={40} className="mx-auto mb-4 opacity-30" />
+                <p className="font-medium">No projects found</p>
+                <p className="text-sm mt-1">Try a different search term or category</p>
+              </div>
+            ) : filteredProjects.map((project, i) => (
               <motion.div
                 key={project.id}
                 initial={{ opacity: 0, y: 20 }}

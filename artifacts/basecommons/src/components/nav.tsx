@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Leaf } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 
@@ -9,6 +9,7 @@ export function Nav() {
 
   const links = [
     { href: "/", label: "Explore" },
+    { href: "/how-it-works", label: "How It Works" },
     { href: "/create", label: "Submit Project" },
     { href: "/admin", label: "Admin" },
   ];
@@ -47,7 +48,8 @@ export function Nav() {
               {link.label}
             </Link>
           ))}
-          <Button variant="default" className="rounded-full px-6 font-bold tracking-wide">
+          <Button variant="default" size="sm" className="rounded-full px-5 font-bold tracking-wide gap-2">
+            <Leaf size={14} />
             Connect Wallet
           </Button>
         </div>
@@ -77,7 +79,10 @@ export function Nav() {
               {link.label}
             </Link>
           ))}
-          <Button className="w-full mt-4 rounded-full font-bold">Connect Wallet</Button>
+          <Button className="w-full mt-4 rounded-full font-bold gap-2">
+            <Leaf size={14} />
+            Connect Wallet
+          </Button>
         </div>
       )}
     </nav>
