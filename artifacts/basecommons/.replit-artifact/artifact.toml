@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "BaseCommons"
+version = "1.0.0"
+id = "artifacts/basecommons"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23207
+
+[services.development]
+run = "pnpm --filter @workspace/basecommons run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/basecommons", "run", "build" ]
+publicDir = "artifacts/basecommons/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23207"
+BASE_PATH = "/"

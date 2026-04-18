@@ -3,20 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: BaseCommons API - Quadratic Funding platform on Base
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: projects
+    description: Project management
+  - name: donations
+    description: Donation tracking
+  - name: stats
+    description: Platform statistics
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +29,210 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all projects
+      parameters:
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, top_funded, most_donors, top_matched]
+            default: newest
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Register a new project (off-chain metadata)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "201":
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a single project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update project metadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectBody"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{id}/donate:
+    post:
+      operationId: recordDonation
+      tags: [donations]
+      summary: Record a confirmed on-chain donation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordDonationBody"
+      responses:
+        "201":
+          description: Donation recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donation"
+
+  /projects/{id}/donations:
+    get:
+      operationId: listProjectDonations
+      tags: [donations]
+      summary: List donations for a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of donations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Donation"
+
+  /donations/recent:
+    get:
+      operationId: listRecentDonations
+      tags: [donations]
+      summary: Recent activity feed across all projects
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Recent donations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DonationWithProject"
+
+  /stats:
+    get:
+      operationId: getPlatformStats
+      tags: [stats]
+      summary: Platform-wide statistics
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformStats"
+
+  /stats/leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [stats]
+      summary: Top projects by matching estimate
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  /stats/funding-cycles:
+    get:
+      operationId: getFundingCycles
+      tags: [stats]
+      summary: Historical funding cycle data
+      responses:
+        "200":
+          description: Funding cycle history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FundingCycle"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +243,253 @@ components:
       required:
         - status
 
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        onChainId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        twitterHandle:
+          type: string
+          nullable: true
+        recipientAddress:
+          type: string
+        totalDonationsWei:
+          type: string
+          description: Total donations in wei (as string to avoid JS bigint issues)
+        donorCount:
+          type: integer
+        estimatedMatchWei:
+          type: string
+          description: Estimated QF match in wei
+        cycleId:
+          type: integer
+        active:
+          type: boolean
+        featured:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - recipientAddress
+        - totalDonationsWei
+        - donorCount
+        - estimatedMatchWei
+        - cycleId
+        - active
+        - featured
+        - createdAt
+        - updatedAt
+
+    CreateProjectBody:
+      type: object
+      properties:
+        onChainId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        twitterHandle:
+          type: string
+          nullable: true
+        recipientAddress:
+          type: string
+        txHash:
+          type: string
+          nullable: true
+      required:
+        - name
+        - description
+        - recipientAddress
+
+    UpdateProjectBody:
+      type: object
+      properties:
+        onChainId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        twitterHandle:
+          type: string
+          nullable: true
+        totalDonationsWei:
+          type: string
+        donorCount:
+          type: integer
+        estimatedMatchWei:
+          type: string
+        active:
+          type: boolean
+
+    Donation:
+      type: object
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        donorAddress:
+          type: string
+        amountWei:
+          type: string
+        txHash:
+          type: string
+          nullable: true
+        cycleId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - projectId
+        - donorAddress
+        - amountWei
+        - cycleId
+        - createdAt
+
+    DonationWithProject:
+      allOf:
+        - $ref: "#/components/schemas/Donation"
+        - type: object
+          properties:
+            projectName:
+              type: string
+            projectImageUrl:
+              type: string
+              nullable: true
+          required:
+            - projectName
+
+    RecordDonationBody:
+      type: object
+      properties:
+        donorAddress:
+          type: string
+        amountWei:
+          type: string
+        txHash:
+          type: string
+          nullable: true
+        cycleId:
+          type: integer
+      required:
+        - donorAddress
+        - amountWei
+        - cycleId
+
+    PlatformStats:
+      type: object
+      properties:
+        totalProjectCount:
+          type: integer
+        activeProjectCount:
+          type: integer
+        totalDonationsWei:
+          type: string
+        totalDonorCount:
+          type: integer
+        totalUniqueDonors:
+          type: integer
+        matchingPoolWei:
+          type: string
+        currentCycleId:
+          type: integer
+        topCategoryByDonors:
+          type: string
+          nullable: true
+        totalDistributedWei:
+          type: string
+      required:
+        - totalProjectCount
+        - activeProjectCount
+        - totalDonationsWei
+        - totalDonorCount
+        - totalUniqueDonors
+        - matchingPoolWei
+        - currentCycleId
+        - totalDistributedWei
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        rank:
+          type: integer
+        project:
+          $ref: "#/components/schemas/Project"
+        matchShare:
+          type: number
+          description: Percentage share of matching pool (0-100)
+      required:
+        - rank
+        - project
+        - matchShare
+
+    FundingCycle:
+      type: object
+      properties:
+        cycleId:
+          type: integer
+        totalMatchingDistributedWei:
+          type: string
+        projectCount:
+          type: integer
+        donationCount:
+          type: integer
+        uniqueDonors:
+          type: integer
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - cycleId
+        - totalMatchingDistributedWei
+        - projectCount
+        - donationCount
+        - uniqueDonors

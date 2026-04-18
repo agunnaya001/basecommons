@@ -1,0 +1,44 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "ckh1h9d2yfKXw_wyyp5Qn"
+uri = "file://artifacts/basecommons/src/assets/garden.png"
+type = "image"
+title = "Community Garden"
+
+[[generated]]
+id = "pUBfYfs2MY89BwfGu-ZgJ"
+uri = "file://artifacts/basecommons/src/assets/opensource.png"
+type = "image"
+title = "Open Source Dev Tools"
+
+[[generated]]
+id = "UoU1ojZtiPq-JtaVdL-b5"
+uri = "file://artifacts/basecommons/src/assets/music.png"
+type = "image"
+title = "Local Music Scene"
+
+[[generated]]
+id = "5XllVFkyy8qjPJao9Nzuy"
+uri = "file://artifacts/basecommons/src/assets/bees.png"
+type = "image"
+title = "Urban Beekeeping"
+
+[[generated]]
+id = "IJgyVb7eb-LDwGQY87bLq"
+uri = "file://artifacts/basecommons/public/logo.png"
+type = "image"
+title = "basecommons-logo"
+
+[[generated]]
+id = "tqCQCdYA_bT9-5W4HStDJ"
+uri = "file://artifacts/basecommons/public/project-garden.png"
+type = "image"
+title = "community-garden-project"
+
+[[generated]]
+id = "V4GEzn9SEgPIicgZUTbE4"
+uri = "file://artifacts/basecommons/public/project-bees.png"
+type = "image"
+title = "urban-beekeeping-project"
